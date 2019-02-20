@@ -206,3 +206,4 @@ yolo: x y w h c class1 class2 ... classn
 ### YOLO v3 plus
 
 将上述改进的修改独立出来，即增加 anchor bbox，该 anchor bbox 的初始点在这个 anchor bbox 对应 cell 的上下左右四个 cell 的中心。这个 idea 的思想就是物体的几何中心不一定是中心点的最好选择，上下左右偏移偏移可能更好。
+
