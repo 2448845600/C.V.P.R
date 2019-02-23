@@ -1,4 +1,4 @@
-# CV-PaperReading
+# MyCVPR
 Computer Vision Paper Reading, CVPR
 
 计算机视觉相关论文总结，大致按照子领域分类。
@@ -26,6 +26,6 @@ Mask-RCNN
 
 反AI系统在视觉的体现，如破解人脸识别的系统
 
-### one-image face
+![](https://github.com/2448845600/MyCVPR/raw/master/image/net1,png)  
 
-基于单张图片训练样本的人脸识别
+https://github.com/2448845600/MyCVPR.git
