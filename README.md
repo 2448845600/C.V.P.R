@@ -25,7 +25,3 @@ Mask-RCNN
 ### anti-AI
 
 反AI系统在视觉的体现，如破解人脸识别的系统
-
-![](https://github.com/2448845600/MyCVPR/raw/master/image/net1,png)  
-
-https://github.com/2448845600/MyCVPR.git
