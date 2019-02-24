@@ -3,25 +3,28 @@ Computer Vision Paper Reading, CVPR
 
 计算机视觉相关论文总结，大致按照子领域分类。
 
-[TOC]
-
-## 神经网络
-
 ## 图像识别
+AlexNet
+
+VGG 
+
+GoogLeNet
+
+ResNet
 
 ## 目标检测
 RCNN，Fast - RCNN，Faster-RCNN，Grid-RCNN
-YOLO 1 2 3
-SSD
+
+YOLO，SSD
 
 Mask-RCNN
 
 ## 语义分割
+FCN
 
-## 3D
+SegNet
 
-## 其他子领域
+DeepLab v123
 
-### anti-AI
-
-反AI系统在视觉的体现，如破解人脸识别的系统
+## RGB-D
+pointNet，pointNet++
