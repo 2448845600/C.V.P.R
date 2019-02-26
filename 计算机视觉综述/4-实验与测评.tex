@@ -1,0 +1,41 @@
+\section{实验与测评}
+% 定性测评（主管评测），定量评价（正确率等指标）
+
+深度神经网络的发展一直是实验创新先于理论突破。本章节总结实验与测评的相关技巧。
+
+\subsection{实验}
+
+\subsubsection{数据集}
+COCO，ImageNet是现阶段最大最全的两个数据集，在图像识别、目标检测、语义分割领域广泛使用，是衡量算法性能的重要工具。不同的计算机视觉任务还有很多对应的数据集，如车辆识别、行人识别、艺术品等。
+
+\subsubsection{训练}
+\paragraph{end-to-end}
+深度神经网络在训练上的追求。一端输入数据，一段出结果，训练过程不需要额外干预。
+
+\subsection{测评}
+在算法、模型的评估中，TP、FP、FN、TN是最基础的概念，如表\ref{tab:table1}。
+\begin{table}[!htbp]  
+\centering
+\caption{样本分类}
+\label{tab:table1}%添加标题 设置标签  
+\begin{tabular}{ccc}  
+\hline  
+ & 正类 & 负类\\
+\hline  
+分类   & TP & FP\\
+未分类 & FN & TN\\
+\hline  
+\end{tabular}  
+\end{table}
+
+在理解这些定义后，\textbf{准确率}（accuracy），\textbf{召回率}（recall），\textbf{精确率}（precision）就可以公式化表示。
+
+\begin{align*}
+Accuracy &= {\frac{TP+TN}{TP+FP+TN+FN}} \\
+Precision &= {\frac{TP}{TP+FN}} \\
+Recall &= {\frac{TP}{TP+FP}} 
+\end{align*}
+
+\paragraph{mAP}定义较为复杂，先介绍P-R图：制定一个类别，根据学习器下每个样本对这个类的预测结果进行排序，排在前面的是学习器认为“最可能”的正例样本，最后的是“最不可能的”.按照此顺序逐个把样本作为正例进行预测（1个正例，2个正例，…），则每次可以计算出当前的R值和P值，然后以R值为横轴、P值为纵轴记性作图.就得到了P-R图. 
+
+通过P-R图可以定义AP（average precision），就是这个曲线下的面积，这里average，等于是对recall取平均。而mean average precision的mean，是对所有类别取平均（每一个类当做一次二分类任务）。现在的图像分类论文基本都是用mAP作为标准。使用AP会比accuracy要合理。对于accuracy，如果有9个负样本和一个正样本，那么即使分类器不做推测，直接全部判定为负样本，其accuracy也可以达到90\%。但是对于AP，recall=1处precision会低至0.1，曲线下的面积就会反映出性能。连续图中AP应该是P对R在[0,1]上的积分，实际上P-R图中的值是离散值，化为sum即可。而mAP是对所有类别的AP值的平均，也就是所有的AP值求和除以类数。

@@ -1,0 +1,43 @@
+\documentclass{ctexart}
+\usepackage{cite} 
+\usepackage{subfigure}
+\usepackage{amsmath}
+
+\title{综述：深度神经网络在计算机视觉的应用}  
+\author{韩笑}
+
+\begin{document}
+\nocite{*}
+
+\maketitle
+
+\tableofcontents
+ 
+\clearpage
+\begin{abstract}
+计算机视觉包含图像识别、目标检测、语义分割等任务，在无人驾驶、安防、人机交互等领域应用广泛，学术界和工业界都致力于得到更加准确、高效的算法。特征提取、傅里叶变换、机器学习等传统方法虽然取得了较好的成果，但是难以实用化，而且进步空间小，发展缓慢。2012年起，以AlexNet为代表的深度学习再次引领了计算机视觉的发展潮流。虽然兴起时间不到十年，但是带来大量技术突破，相关论文浩如烟海。本文试图整理本次浪潮下深度神经网路在计算机视觉中的发展脉络，为深入研究打下基础。
+\end{abstract}
+
+\input{AI/1-前言.tex}
+
+\input{AI/2-深度神经网络.tex}
+
+\input{AI/3-计算机视觉现状.tex}
+
+\input{AI/4-实验与测评.tex}
+
+\input{AI/5-新兴问题.tex}
+
+\section{结论}
+随着深度神经网络在计算机视觉中的广泛应用，分类、识别、定位、分割均取得了重大突破，在学术界和工业界都掀起波澜。但是我们也必须看到，深度神经网络自身的理论并不完善，实践先于理论，故在敏感领域的应用受限。本文对接下来深度学习在计算机视觉领域的发展，有3点猜测：
+\begin{itemize}
+\item 深度神经网络基础理论突破，提高可解释性；
+\item 和其他领域的新思路结合，提高性能；
+\item 结合先验知识，提高针对特定任务的专家系统性能。
+\end{itemize}
+
+\bibliographystyle{plain}
+\bibliography{ref}
+ 
+\end{document}
+
