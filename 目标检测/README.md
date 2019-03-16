@@ -80,3 +80,49 @@ SSD与YOLO都采用单个神经网络实现分类定位。相对于YOLO，SSD作
 ## R-FCN
 
 ## FPN
+
+## M2Det
+
+论文：M2Det: A Single-Shot Object Detector based on Multi-Level Feature Pyramid Network 
+AAAI 2019
+
+现有的 one-stage 和 two-stage 目标检测算法均广泛使用特征金字塔（feature pyramids），以解决物体间尺度变化带来的差异（scale variation across object instances）。
+
+但是，现有的feature pyramids设计存在局限性：只是简单地根据内在多尺度构造金字塔结构，而且这些金字塔结构是被设计用于处理识别任务。本文首次提出多层次特征金字塔网络（Multi-Level Feature Pyramid Network，MLFPN），用于构建更加高效的特征金字塔，更好得解决目标检测任务中的多尺度问题。
+
+首先，我们融合主干网络中的多尺度特征，得到基础特征；然后，将基础特征送入一组交替连接的简化U型模块和特征融合模块，每个简化U型模块中decoder layers输出一组多尺度特征图；最后，将多组多尺度特征图中的等尺寸特征组合，得到多层次特征金字塔，用于目标检测。为测试效果，将MLFPN集成到SSD中，得到M2Det。
+
+### Introduction and Related Work
+
+[![AP0q5n.png](https://s2.ax1x.com/2019/03/12/AP0q5n.png)](https://imgchr.com/i/AP0q5n)
+
+目标检测现在面临的一个主要挑战是**物体间的尺度差异（Scale variation across object instances）**，通常采用两种策略解决：**image pyramid** 和 **feature pyramid**。image pyramid在测试时使用，会大大增加内存和计算复杂性，效率急剧下降。与image pyramid相比， feature pyramid占用的内存和计算成本更少，而且便于嵌入到各类现有的检测算法中。
+
+尽管feature pyramid取得了不错的结果，但是其骨干网络的金字塔结构是被设计用于处理识别任务（如ResNet，虽然得到feature pyramid，但是存在缺陷，下文说明），所以根据这些骨干网络建立的特征金字塔存在一些局限性。例如，SSD直接单独使用两层骨架网络（VGG16）的特征，和通过步幅为2的卷积获得的四个额外层来构建特征金字塔；STDN仅使用DenseNet的最后一个Dense块，通过池化和尺度变换操作构建特征金字塔；FPN通过以自上而下的方式融合深层和浅层的特征来构造特征金字塔。
+
+上述方法具有以下**两个限制**。**首先**，金字塔中的特征图对于目标检测任务而言不够典型（表达能力不够），它们只是简单地从为对象分类任务设计的骨干网络的层（特征）中构造。**其次**，金字塔中的每个特征图主要或甚至仅从骨干网络的单层构建，即主要或仅包含单层信息。本文分析总结了**各层特征图的特性**：较深层中的高级特征对分类任务更有效，而较浅层中的低级特征对定位任务更敏感。此外，低级特征更适合于表征具有简单外观的对象，而高级特征适合于具有复杂外观的对象。实际上，具有相似大小的对象实例的外观可能完全不同。例如，交通灯和遥远的人可能具有相当的尺寸，但是人的外观要复杂得多。因此，**feature pyramid性能欠佳的主要原因是金字塔中每个特征图主要由单级特征组成**。
+
+本文构建一个更有效的feature pyramid，用于检测不同尺度的物体，同时避免上述局限。首先，我们融合主干网络中的多尺度特征，得到基础特征；然后，将基础特征送入一组交替连接的简化U型模块和特征融合模块，每个简化U型模块中decoder layers输出一组多尺度特征图；最后，将多组多尺度特征图中的等尺寸特征组合，得到多层次特征金字塔，用于目标检测。为测试效果，将MLFPN集成到SSD中，得到M2Det。
+
+### Proposed Method
+M2Det利用基础网络和MLFPN提取输入图片的特征，得到密集的bounding boxes 和类别概率.。**MLFPN的作用就是将基础网络得到的多尺度特征叠加组合，得到新的多层次多尺度特征，以聚合浅层信息定位能力强、深层信息分类能力强的特点**。所以MLFPN模块可以作为独立组件拼接到各类目标检测网络中。MLFPN包含三个模块，FFM（Feature Fusion Module，特征融合模块），TUM（Thinned U-shape Module，简化U型模块）和SFAM（Scale-wise Feature Aggregation Module，多尺度特征增强模块）。
+
+下图展示了M2Det_320 × 320的结构。在MLFPN中，FFMv1模块融合基础网络的特征图得到基础特征；TUM模块产生一组多尺度的特征（如图中shallow中的4尺度特征）；FFMv2模块融合基础特征和上一个TUM的最大尺寸特征图，送入下一个TUM；TUM和FFMv2模块交替连接，得到多层次多尺度（multi-level multi-scale）的特征（即图中shallow，medium，deep的3层特征）；最后，SFAM模块聚合多层次多尺度特征，得到新的融合的多尺度特征金字塔。level和scale都是参数，代码中取level=8，scale=6。
+
+[![APspqS.png](https://s2.ax1x.com/2019/03/12/APspqS.png)](https://imgchr.com/i/APspqS)
+
+### Discussion
+
+作者还讨论了为什么MLFPN为什么有效。下图中，图片包含两个人，两辆车和一个指示灯。两个人之间，两辆车之间，大小不同；指示灯，小人小车的尺寸相近。通过比较不同层次不同尺度的特征图，可以得到三点：
+
+- compared with the smaller person, the larger person has strongest activation value at the feature map of large scale, so as to the smaller car and larger car; 
+- the traffic light, the smaller person and the smaller car have strongest activation value at the feature maps of the same scale; 
+- the persons, the cars and the traffic light have strongest activation value at the highest-level, middle- level, lowest-level feature maps respectively. 
+
+这个例子表明：
+- our method learns very effective features to handle scale variation and appearance-complexity variation across object instances; 
+- it is necessary to use multi-level features to detect objects with similar size.
+
+[![AFxu0P.png](https://s2.ax1x.com/2019/03/13/AFxu0P.png)](https://imgchr.com/i/AFxu0P)
+
+
