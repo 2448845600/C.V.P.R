@@ -19,6 +19,8 @@ YOLO，SSD
 
 Mask-RCNN
 
+M2Det
+
 ## 语义分割
 FCN
 
