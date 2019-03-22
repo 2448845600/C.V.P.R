@@ -18,16 +18,16 @@ R-CNN的每个候选框都需要归一化后送到神经网路提取特征，计
 
 本文在R-CNN的基础上思考卷积神经网络是否需要对输入fixed-size。卷积层、池化层对输入大小不敏感，输入不同尺寸对应输出不同大小；全连接层对输入尺寸有限制。所以归一化的过程可以放在全连接层前。而本文提出的归一化工具就是**Spatial Pyramid Pooling（SPP）**，即空间金字塔池化。SPP不仅在目标检测领域实用，而且可以广泛应用在计算机视觉各领域，作为fixed-size的一种解决方案。
 
-[![SPP.png](https://s2.ax1x.com/2019/03/18/Amg3QK.png)](https://imgchr.com/i/Amg3QK)
+![SPP.png](https://s2.ax1x.com/2019/03/18/Amg3QK.png)
 
 基础网络最后卷积层输出的特征图（或者特征图的一部分）送入SPP；池化得到1\*1，2\*2，4\*4的特征矩阵；拉平得到（1+4+16）的矩阵。下图展示了一个h\*w\*256的特征图转换为21\*256的矩阵的SPP过程。SPP的巧妙之处在于巧用池化层将不确定大小的输入转变为相同大小的输出，优于暴力拉伸缩放。
 
-[![SPP-net.png](https://s2.ax1x.com/2019/03/18/Amglz6.png)](https://imgchr.com/i/Amglz6)
+![SPP-net.png](https://s2.ax1x.com/2019/03/18/Amglz6.png)
 
 ## Fast R-CNN
 论文：Fast R-CNN
 
-[Region of interest pooling explained](https://deepsense.ai/region-of-interest-pooling-explained/)
+![Region of interest pooling explained](https://deepsense.ai/region-of-interest-pooling-explained/)
 
 Fast R-CNN在R-CNN和SPP-net的基础上做了两点改进：
 - 简化空间金字塔池化，提出**ROI pooling**（Region of interest pooling）
@@ -39,7 +39,7 @@ ROI是表示预选框位置的五维矩阵（index, x1, y1, x2, y2），即图�
 3. 寻找每个小块的最大值
 4. 得到输出矩阵
 
-[![ROI_Pooling.gif](https://s2.ax1x.com/2019/03/18/AmgYee.gif)](https://imgchr.com/i/AmgYee)
+![ROI_Pooling.gif](https://s2.ax1x.com/2019/03/18/AmgYee.gif)
 
 ## YOLO
 论文：You only look once: Unified, real-time object detection
@@ -48,8 +48,6 @@ ROI是表示预选框位置的五维矩阵（index, x1, y1, x2, y2），即图�
 $$
 [x_1,y_1,w_1,h_1,c_1,x_2,y_2,w_2,h_2,c_2, class_1 .... class_5]
 $$
-
-[![YOLO.png](https://s2.ax1x.com/2019/03/18/AmgGLD.png)](https://imgchr.com/i/AmgGLD)
 
 YOLO另一个创新是损失函数。传统的目标检测算法中，类别是分类问题，定位是回归问题；而YOLO将两者统一为回归问题，最近预测每个类别的概率而不是二分类。
 
@@ -61,21 +59,95 @@ SSD与YOLO都采用单个神经网络实现分类定位。相对于YOLO，SSD作
 2. 以Faster R-CNN的Anchor Box代替YOLO的Bounding Box；
 3. 网络中部分使用DeepLab提出的空洞卷积。
 
-[![SSDvsYOLO.png](https://s2.ax1x.com/2019/03/18/Amg8sO.png)](https://imgchr.com/i/Amg8sO)
+![SSDvsYOLO.png](https://s2.ax1x.com/2019/03/18/Amg8sO.png)
 
 ## Faster R-CNN
 论文：Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks
 
 从R-CNN升级到Fast R-CNN，整个算法还剩下一个瓶颈：生成候选框。Faster R-CNN放弃了传统候选框生成算法selective Search，设计了**RPN**（Region Proposal Network）算法，如图。
 
-[![Faster R-CNN.png](https://s2.ax1x.com/2019/03/18/Amggoj.png)](https://imgchr.com/i/Amggoj)
+![Faster R-CNN.png](https://s2.ax1x.com/2019/03/18/Amggoj.png)
 
 神经网络输出的特征图，送入RPN，就这么简单的得到候选框。RPN的输入与ROI pooling的输入相同，而且这两层均为单层卷积层（实际上还有1\*1的卷积层），整个算法变成全卷积结构。故对于一张图片，只需要运行一次神经网络，节省大量计算开销。RPN生成候选框的过程如下：对于特征图的每个点，生成k个anchor boxes（一般设置3种scale和3种aspect rations，共9个anchor boxes）。每个anchor box预测6个参数，2个为存在物体和不存在物体的概率，另外4个是坐标。如果送入RPN的特征图尺寸为W\*H，则预测W\*H\*k个anchor boxes，可以通过nms等方法过滤后送入ROI pooling。
 
-[![Faster R-CNN-anchorbox.png](https://s2.ax1x.com/2019/03/18/AmgcwQ.png)](https://imgchr.com/i/AmgcwQ)
+![Faster R-CNN-anchorbox.png](https://s2.ax1x.com/2019/03/18/AmgcwQ.png)
 
 ## YOLO v2v3
 论文：YOLO9000: better, faster, stronger
+
+### anchor boxes
+
+由于v1中，每个Cell的两个bbox共用一组类别概率 $class_1 .... class_n​$，所以YOLO检测密集的物体易出错。所以，v2改进思路就是取消共用，让每个 bbox 都有自己的类别概率，如下：
+
+$$[x_1,y_1,w_1,h_1,c_1,x_2,y_2,w_2,h_2,c_2, class_1 .... class_n] \rightarrow  [x_1,y_1,w_1,h_1,c_1,class_1...class_n], [x_2,y_2,w_2,h_2,c_2,class_1...class_n]$$
+
+除此之外，还引入Faster R-CNN中RPN（Region Proposal Networks），即anchor boxes，取代bbox。
+
+![Faster R-CNN-anchorbox.png](https://i.postimg.cc/W3WFxLby/anchor-box-2.png)
+
+实际操作中，通过预测偏移量 $t_x,t_y,t_w,t_h$，将预设的 anchor box 尺寸融入预测中。偏移量转换为 box 参数如下，在这组公式中 $t_x,t_y,t_w,t_h$ 是 预测的box 的偏移量（预测值）；$x,y,w,h$ 是预测的box 的中心点和宽高（由偏移量转换得到）；$x_a,y_a,w_a,$$h_a$ 是 anchor boxes 的中心点和宽高（预先设定）。举个例子，如果  $t_x  = 1$，相当于将 box 右移  $w_a$ 。
+$$
+\begin{split}
+t_x &= (x - x_a) / w_a \\
+t_y &= (y - y_a) / h_a \\
+t_w &= \log(w/w_a) \\
+t_h &= \log(h/h_a) \\
+\end{split} \\
+网络最终预测：
+[t_x,t_y,t_w,t_h,c,class_1...class_n]
+$$
+
+
+### anchor boxes plus
+
+**论文 Dimension Clusters && Direct location prediction 部分**
+
+但是，这只是 anchor boxes 的初始形态。要让它 work，需要解决两个小问题：
+
+- 选取合适的长宽
+
+anchor boxes 需要设置 w，h，如何得到合适的 w和h 呢。Faster R-CNN 中没有提到如何选取 w h，本文提出一个有趣的方法：利用 kmeans 聚类得到 k 组长宽值。聚类过程：随机选择 k 个框为簇心，计算所有框到簇心的距离（定义距离为下式），将所有框分到与其距离最小的簇心，计算每簇的框的长宽均值为新的簇心，循环这个过程知道簇心不变或者到指定迭代次数。该论文通过实验，取 k = 5。
+$$
+d(box, centroid) = 1 - iou(box, centroid)
+$$
+
+- 保持训练的稳定
+
+长宽设置好了，训练吧，又出问题了，模型不稳定，就是说不收敛或者是收敛有点慢。作者认为原因在于预测 x, y 上，网络预测 $ t_x, t_y $ 以表示 x, y ，但是 $ t_x, t_y $ 值可以取到整个图片，在训练的开始阶段，很难稳定。本文提出的解决方案是归一化，将 $t_x,t_y,t_w,t_h,t_o$ 按照下式归一化：
+$$
+g(z) = \frac{1} {1+e^{-z}}
+$$
+
+网络预测归一化后的 $t_x,t_y,t_w,t_h,t_o$ , 参数转换方式为:
+
+$$
+\begin{split}
+b_x &= \sigma (t_x) + c_x \\
+b_y &= \sigma (t_y) + c_y \\
+b_w &= p_w e^{t_w} \\
+b_h &= p_h e^{t_h} \\
+\end{split} \\
+Pr(obiect) * IOU(b, object) = \sigma (t_o)
+$$
+
+$c_x, c_y$ 表示 cell 距离整张图片左上角的距离（可以看着是cell的左上角坐标）
+
+
+至此，**YOLO v2 的 anchor boxes 介绍完毕**。v2 借鉴 Faster R-CNN 中的 anchor boxes, 并做以下几点改进：
+
+ 1. 利用自定义的距离公式，kmeans 聚类得到合适的 anchor boxes 长宽值；
+ 2. 利用归一化后的 $ t_x, t_y, t_w, t_h, t_o $ 训练，提高训练的稳定性。
+
+### YOLO 9000
+
+除了算法上的改进，作者还在 v2 的基础上，别出心裁地训练了一个可以检测9000余种物体的模型，YOLO9000。训练一个可以检测 9000 种物体的模型难吗？不难，如果数据够的话。CV常用的数据集有coco和ImageNet数据集。coco数据集标签的种类不过百，但是每个物体都有精准的框数据；ImageNet数据集标签种类多，但是很多没有标框；coco数据集标签较为宽泛，比如coco有“狗”，而ImageNet有“金毛” “二哈”。所以，识别的数据足够，但是定位的数据不够。
+
+作者提出一种联合训练的方法，混合coco和ImageNet数据集，利用coco训练网络定位，利用ImageNet训练网络分类。具体做法如下：将两个数据集混合作为训练集，并且得到如图所示的标签树，在“狗”大类中包含“二哈”和“金毛”小类；训练过程中，如果输入图片来自于coco数据集，则按照完整的 loss function 反向传播；如果输入图片来自 ImageNet，则仅采用 loss function 中的类别部分。这样，网络从coco中学习定位和大类的分类，从ImageNet中学习小类的分类。对于ImageNet中没有出现的某种狗，我们的模型可以把它归为狗这一大类，而不是不知道它是啥。
+
+### YOLO v3
+- 增加了anchor box的数量
+- 更加复杂的网络，53 层卷积层；
+- 将 v2 中的 passthrough layer 发扬光大。
 
 ## R-FCN
 
