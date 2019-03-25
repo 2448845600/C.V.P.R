@@ -197,4 +197,31 @@ M2Det利用基础网络和MLFPN提取输入图片的特征，得到密集的boun
 
 [![AFxu0P.png](https://s2.ax1x.com/2019/03/13/AFxu0P.png)](https://imgchr.com/i/AFxu0P)
 
+## CBAM
 
+论文：CBAM: Convolutional Block Attention Module，ECCV-2018
+
+### Background
+
+From the LeNet architecture to Residual-style Networks so far, the network has become deeper for rich representation. Apart from these factors, we investigate a different aspect of the architecture design, attention. Our goal is to increase representation power by using attention mechanism: focusing on important features and suppressing unnecessary ones.
+我们引入注意力机制（attention mechanism）以增加模型的表达能力，即注重显著特征和压制非必须特征。
+
+### CBAM
+
+Convolutional Block Attention Module
+we sequentially apply channel and spatial attention modules, so that each of the branches can learn ‘what’ and ‘where’ to attend in the channel and spatial axes respectively. 下图包含了两个连续的子模块，channel和spatial。输入的特征经过CBAM得到Refined Feature。
+
+[![Al4q1O.png](https://s2.ax1x.com/2019/03/20/Al4q1O.png)](https://imgchr.com/i/Al4q1O)
+
+**Channel Attention Module**
+通道注意力子模块（the channel sub-module）希望探索特征在通道间的关系。**首先**，利用最大池化和平均池化得到两个特征矩阵，对于n\*n的特征图，最大池化就是找这$n^2$个数的最大值，单张特征图得到一个数字，一组特征图得到特征矩阵。**然后**，将两个特征矩阵分别送入共享参数的多层感知机，得到两个新的特征矩阵。**最后**，利用求和（element-wise summation）融合两个特征矩阵，得到Channel Attention。
+[![Al51vF.png](https://s2.ax1x.com/2019/03/20/Al51vF.png)](https://imgchr.com/i/Al51vF)
+
+**Spatial Attention Module**
+空间注意力子模块（spatial sub-module）希望得到特征图哪里更重要。**首先**，对输入特征进行通道方向（channel axis）的平均池化和最大池化，得到两张特征图。以maxpooling为例。输入特征包含n张特征图，$map_k$表示第k个特征图（是一个二维矩阵），通过MaxPool后得到单张特征图$MaxMap$，$MaxMap[i][j] = \max \sum_{k} map_k[i][j]$。**然后**，将两张特征图组成的特征送入卷积层，得到spatial attention。
+
+[![Al58u4.png](https://s2.ax1x.com/2019/03/20/Al58u4.png)](https://imgchr.com/i/Al58u4)
+
+### Conclusion
+
+提出Channel Attention和Spatial Attention，组成CBAM模块，作为加深网络结构，优化特征的通用结构。
