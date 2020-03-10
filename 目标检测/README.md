@@ -80,7 +80,9 @@ SSD与YOLO都采用单个神经网络实现分类定位。相对于YOLO，SSD作
 
 由于v1中，每个Cell的两个bbox共用一组类别概率 $class_1 .... class_n$，所以YOLO检测密集的物体易出错。所以，v2改进思路就是取消共用，让每个 bbox 都有自己的类别概率，如下：
 
-$$[x_1,y_1,w_1,h_1,c_1,x_2,y_2,w_2,h_2,c_2, class_1 .... class_n] \rightarrow  [x_1,y_1,w_1,h_1,c_1,class_1...class_n], [x_2,y_2,w_2,h_2,c_2,class_1...class_n]$$
+$$
+[x_1,y_1,w_1,h_1,c_1,x_2,y_2,w_2,h_2,c_2, class_1 .... class_n] \rightarrow  [x_1,y_1,w_1,h_1,c_1,class_1...class_n], [x_2,y_2,w_2,h_2,c_2,class_1...class_n]
+$$
 
 除此之外，还引入Faster R-CNN中RPN（Region Proposal Networks），即anchor boxes，取代bbox。
 
