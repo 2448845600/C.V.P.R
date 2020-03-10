@@ -1,6 +1,8 @@
 # 目标检测
 吸取论文精华
 
+[TOC]
+
 ## R-CNN
 R-CNN算法是深度神经网络在目标检测领域最早的实践，其主要过程分为四步：
 
@@ -18,16 +20,15 @@ R-CNN的每个候选框都需要归一化后送到神经网路提取特征，计
 
 本文在R-CNN的基础上思考卷积神经网络是否需要对输入fixed-size。卷积层、池化层对输入大小不敏感，输入不同尺寸对应输出不同大小；全连接层对输入尺寸有限制。所以归一化的过程可以放在全连接层前。而本文提出的归一化工具就是**Spatial Pyramid Pooling（SPP）**，即空间金字塔池化。SPP不仅在目标检测领域实用，而且可以广泛应用在计算机视觉各领域，作为fixed-size的一种解决方案。
 
-![SPP.png](https://s2.ax1x.com/2019/03/18/Amg3QK.png)
+![SPP](./image/SPP.png)
 
 基础网络最后卷积层输出的特征图（或者特征图的一部分）送入SPP；池化得到1\*1，2\*2，4\*4的特征矩阵；拉平得到（1+4+16）的矩阵。下图展示了一个h\*w\*256的特征图转换为21\*256的矩阵的SPP过程。SPP的巧妙之处在于巧用池化层将不确定大小的输入转变为相同大小的输出，优于暴力拉伸缩放。
 
-![SPP-net.png](https://s2.ax1x.com/2019/03/18/Amglz6.png)
+![SPP-net.png](./image/SPP-net.png)
 
 ## Fast R-CNN
 论文：Fast R-CNN
 
-![Region of interest pooling explained](https://deepsense.ai/region-of-interest-pooling-explained/)
 
 Fast R-CNN在R-CNN和SPP-net的基础上做了两点改进：
 - 简化空间金字塔池化，提出**ROI pooling**（Region of interest pooling）
@@ -39,7 +40,7 @@ ROI是表示预选框位置的五维矩阵（index, x1, y1, x2, y2），即图�
 3. 寻找每个小块的最大值
 4. 得到输出矩阵
 
-![ROI_Pooling.gif](https://s2.ax1x.com/2019/03/18/AmgYee.gif)
+![ROI_Pooling.gif](./image/ROI_Pooling.gif)
 
 ## YOLO
 论文：You only look once: Unified, real-time object detection
@@ -59,31 +60,31 @@ SSD与YOLO都采用单个神经网络实现分类定位。相对于YOLO，SSD作
 2. 以Faster R-CNN的Anchor Box代替YOLO的Bounding Box；
 3. 网络中部分使用DeepLab提出的空洞卷积。
 
-![SSDvsYOLO.png](https://s2.ax1x.com/2019/03/18/Amg8sO.png)
+![SSDvsYOLO.png](./image/SSDvsYOLO.png)
 
 ## Faster R-CNN
 论文：Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks
 
 从R-CNN升级到Fast R-CNN，整个算法还剩下一个瓶颈：生成候选框。Faster R-CNN放弃了传统候选框生成算法selective Search，设计了**RPN**（Region Proposal Network）算法，如图。
 
-![Faster R-CNN.png](https://s2.ax1x.com/2019/03/18/Amggoj.png)
+![Faster R-CNN.png](./image/Faster R-CNN.png)
 
 神经网络输出的特征图，送入RPN，就这么简单的得到候选框。RPN的输入与ROI pooling的输入相同，而且这两层均为单层卷积层（实际上还有1\*1的卷积层），整个算法变成全卷积结构。故对于一张图片，只需要运行一次神经网络，节省大量计算开销。RPN生成候选框的过程如下：对于特征图的每个点，生成k个anchor boxes（一般设置3种scale和3种aspect rations，共9个anchor boxes）。每个anchor box预测6个参数，2个为存在物体和不存在物体的概率，另外4个是坐标。如果送入RPN的特征图尺寸为W\*H，则预测W\*H\*k个anchor boxes，可以通过nms等方法过滤后送入ROI pooling。
 
-![Faster R-CNN-anchorbox.png](https://s2.ax1x.com/2019/03/18/AmgcwQ.png)
+![Faster R-CNN-anchorbox.png](./image/Faster R-CNN-anchorbox.png)
 
 ## YOLO v2v3
 论文：YOLO9000: better, faster, stronger
 
 ### anchor boxes
 
-由于v1中，每个Cell的两个bbox共用一组类别概率 $class_1 .... class_n​$，所以YOLO检测密集的物体易出错。所以，v2改进思路就是取消共用，让每个 bbox 都有自己的类别概率，如下：
+由于v1中，每个Cell的两个bbox共用一组类别概率 $class_1 .... class_n$，所以YOLO检测密集的物体易出错。所以，v2改进思路就是取消共用，让每个 bbox 都有自己的类别概率，如下：
 
 $$[x_1,y_1,w_1,h_1,c_1,x_2,y_2,w_2,h_2,c_2, class_1 .... class_n] \rightarrow  [x_1,y_1,w_1,h_1,c_1,class_1...class_n], [x_2,y_2,w_2,h_2,c_2,class_1...class_n]$$
 
 除此之外，还引入Faster R-CNN中RPN（Region Proposal Networks），即anchor boxes，取代bbox。
 
-![Faster R-CNN-anchorbox.png](https://i.postimg.cc/W3WFxLby/anchor-box-2.png)
+<img src="E:\GitHub_Repos\MyRepos\MyCVPR\目标检测\image\anchor-box.png" style="zoom: 50%;" />
 
 实际操作中，通过预测偏移量 $t_x,t_y,t_w,t_h$，将预设的 anchor box 尺寸融入预测中。偏移量转换为 box 参数如下，在这组公式中 $t_x,t_y,t_w,t_h$ 是 预测的box 的偏移量（预测值）；$x,y,w,h$ 是预测的box 的中心点和宽高（由偏移量转换得到）；$x_a,y_a,w_a,$$h_a$ 是 anchor boxes 的中心点和宽高（预先设定）。举个例子，如果  $t_x  = 1$，相当于将 box 右移  $w_a$ 。
 $$
@@ -166,7 +167,10 @@ AAAI 2019
 
 ### Introduction and Related Work
 
-[![AP0q5n.png](https://s2.ax1x.com/2019/03/12/AP0q5n.png)](https://imgchr.com/i/AP0q5n)
+
+
+![](./image/fpn.png)
+
 
 目标检测现在面临的一个主要挑战是**物体间的尺度差异（Scale variation across object instances）**，通常采用两种策略解决：**image pyramid** 和 **feature pyramid**。image pyramid在测试时使用，会大大增加内存和计算复杂性，效率急剧下降。与image pyramid相比， feature pyramid占用的内存和计算成本更少，而且便于嵌入到各类现有的检测算法中。
 
@@ -181,7 +185,11 @@ M2Det利用基础网络和MLFPN提取输入图片的特征，得到密集的boun
 
 下图展示了M2Det_320 × 320的结构。在MLFPN中，FFMv1模块融合基础网络的特征图得到基础特征；TUM模块产生一组多尺度的特征（如图中shallow中的4尺度特征）；FFMv2模块融合基础特征和上一个TUM的最大尺寸特征图，送入下一个TUM；TUM和FFMv2模块交替连接，得到多层次多尺度（multi-level multi-scale）的特征（即图中shallow，medium，deep的3层特征）；最后，SFAM模块聚合多层次多尺度特征，得到新的融合的多尺度特征金字塔。level和scale都是参数，代码中取level=8，scale=6。
 
-[![APspqS.png](https://s2.ax1x.com/2019/03/12/APspqS.png)](https://imgchr.com/i/APspqS)
+
+
+![](./image/M2Det.png)
+
+
 
 ### Discussion
 
@@ -195,7 +203,8 @@ M2Det利用基础网络和MLFPN提取输入图片的特征，得到密集的boun
 - our method learns very effective features to handle scale variation and appearance-complexity variation across object instances; 
 - it is necessary to use multi-level features to detect objects with similar size.
 
-[![AFxu0P.png](https://s2.ax1x.com/2019/03/13/AFxu0P.png)](https://imgchr.com/i/AFxu0P)
+![](./image/FCOS-2.png)
+
 
 ## CBAM
 
@@ -211,17 +220,27 @@ From the LeNet architecture to Residual-style Networks so far, the network has b
 Convolutional Block Attention Module
 we sequentially apply channel and spatial attention modules, so that each of the branches can learn ‘what’ and ‘where’ to attend in the channel and spatial axes respectively. 下图包含了两个连续的子模块，channel和spatial。输入的特征经过CBAM得到Refined Feature。
 
-[![Al4q1O.png](https://s2.ax1x.com/2019/03/20/Al4q1O.png)](https://imgchr.com/i/Al4q1O)
+![CBAM](./image/CBAM.png)
 
 **Channel Attention Module**
 通道注意力子模块（the channel sub-module）希望探索特征在通道间的关系。**首先**，利用最大池化和平均池化得到两个特征矩阵，对于n\*n的特征图，最大池化就是找这$n^2$个数的最大值，单张特征图得到一个数字，一组特征图得到特征矩阵。**然后**，将两个特征矩阵分别送入共享参数的多层感知机，得到两个新的特征矩阵。**最后**，利用求和（element-wise summation）融合两个特征矩阵，得到Channel Attention。
-[![Al51vF.png](https://s2.ax1x.com/2019/03/20/Al51vF.png)](https://imgchr.com/i/Al51vF)
+
+![CAM](./image/CAM.png)
 
 **Spatial Attention Module**
 空间注意力子模块（spatial sub-module）希望得到特征图哪里更重要。**首先**，对输入特征进行通道方向（channel axis）的平均池化和最大池化，得到两张特征图。以maxpooling为例。输入特征包含n张特征图，$map_k$表示第k个特征图（是一个二维矩阵），通过MaxPool后得到单张特征图$MaxMap$，$MaxMap[i][j] = \max \sum_{k} map_k[i][j]$。**然后**，将两张特征图组成的特征送入卷积层，得到spatial attention。
+
+
+
+![](./image/SAM.png)
 
 [![Al58u4.png](https://s2.ax1x.com/2019/03/20/Al58u4.png)](https://imgchr.com/i/Al58u4)
 
 ### Conclusion
 
 提出Channel Attention和Spatial Attention，组成CBAM模块，作为加深网络结构，优化特征的通用结构。
+
+## Todo
+- [ ] R-FCN
+- [ ] FPN
+- [ ] NAS相关
